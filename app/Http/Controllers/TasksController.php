@@ -11,12 +11,21 @@ class TasksController extends Controller
         //getでtasks/にアクセスされた場合の一覧表示処理
         public function index()
         {
-            $tasks = Task::orderBy('id', 'desc')->paginate(28);
+        $data = [];
+        
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('id', 'desc')->paginate(10);
+         
+         $data = [
+            'user' => $user,
+            'tasks' => $tasks,
+            ];  
+        return view('tasks.index', $data);
             
-            return view('tasks.index', [
-                'tasks' => $tasks,
-            ]);
         }
+        return view ('welcome');
+}
 
 
     /**
@@ -46,10 +55,10 @@ class TasksController extends Controller
             'content' => 'required|max:191',
         ]);
         
-        $task = new Task;
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
+        $request->user()->tasks()->create([
+            'status' => $request->status,
+            'content' => $request->content,
+        ]);
         
         return redirect('/');
     }
@@ -116,9 +125,14 @@ class TasksController extends Controller
     public function destroy($id)
     {
         $task = Task::find($id);
-        $task->delete();
+        
+          if (\Auth::id() === $task->user_id) {
+            $task->delete();
+          }
+     
         
         return redirect('/');
         
     }
+
 }
