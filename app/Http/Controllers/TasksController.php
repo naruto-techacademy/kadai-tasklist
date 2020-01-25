@@ -102,7 +102,7 @@ class TasksController extends Controller
             'task' => $task,
         ]);
         }
-        return view('welcome');
+        return redirect('/');
     }
 
     /**
